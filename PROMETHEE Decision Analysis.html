@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROMETHEE Multi-Criteria Decision Analysis</title>
+    <style>
+        :root {
+            --color-primary: #208085;
+            --color-primary-hover: #1a6670;
+            --color-primary-active: #155460;
+            --color-secondary: rgba(94, 82, 64, 0.12);
+            --color-secondary-hover: rgba(94, 82, 64, 0.2);
+            --color-background: #fcfcf9;
+            --color-surface: #ffffff;
+            --color-text: #134252;
+            --color-text-secondary: #626c7c;
+            --color-border: rgba(94, 82, 64, 0.2);
+            --color-success: #208085;
+            --color-warning: #a84b2f;
+            --color-error: #c0152f;
+            --color-focus-ring: rgba(33, 128, 141, 0.4);
+            --color-gray-200: #f5f5f5;
+            --color-gray-300: #a7a9a9;
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-size-base: 14px;
+            --font-size-sm: 12px;
+            --font-size-lg: 16px;
+            --font-size-xl: 18px;
+            --font-size-2xl: 20px;
+            --font-size-3xl: 24px;
+            --space-4: 4px;
+            --space-8: 8px;
+            --space-12: 12px;
+            --space-16: 16px;
+            --space-20: 20px;
+            --space-24: 24px;
+            --space-32: 32px;
+            --radius-base: 8px;
+            --radius-md: 10px;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            font-family: var(--font-family);
+            font-size: var(--font-size-base);
+            line-height: 1.5;
+            color: var(--color-text);
+            background-color: var(--color-background);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        h1, h2, h3, h4 {
+            margin: 0;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        h1 { font-size: var(--font-size-3xl); }
+        h2 { font-size: var(--font-size-2xl); }
+        h3 { font-size: var(--font-size-xl); }
+
+        p {
+            margin: 0 0 var(--space-16) 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-16);
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+            color: white;
+            padding: var(--space-32) var(--space-16);
+            margin-bottom: var(--space-32);
+            box-shadow: var(--shadow-md);
+        }
+
+        header h1 {
+            color: white;
+            margin-bottom: var(--space-8);
+        }
+
+        header p {
+            opacity: 0.95;
+            margin: 0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: var(--space-24);
+            margin-bottom: var(--space-32);
+        }
+
+        @media (max-width: 1024px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--color-surface);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-sm);
+            padding: var(--space-20);
+            overflow: hidden;
+        }
+
+        .card h3 {
+            margin-bottom: var(--space-16);
+            color: var(--color-primary);
+        }
+
+        .form-group {
+            margin-bottom: var(--space-16);
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: var(--space-8);
+            font-weight: 500;
+            font-size: var(--font-size-sm);
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: var(--space-8) var(--space-12);
+            font-size: var(--font-size-base);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            background: var(--color-surface);
+            color: var(--color-text);
+            transition: border-color 150ms, box-shadow 150ms;
+            font-family: var(--font-family);
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px var(--color-focus-ring);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23134252' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right var(--space-12) center;
+            background-size: 16px;
+            padding-right: var(--space-32);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-8) var(--space-16);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-base);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 150ms;
+            border: none;
+            font-family: var(--font-family);
+        }
+
+        .btn--primary {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .btn--primary:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .btn--primary:active {
+            background: var(--color-primary-active);
+        }
+
+        .btn--secondary {
+            background: var(--color-secondary);
+            color: var(--color-text);
+        }
+
+        .btn--secondary:hover {
+            background: var(--color-secondary-hover);
+        }
+
+        .btn--full-width {
+            width: 100%;
+        }
+
+        .btn:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px var(--color-focus-ring);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .tabs {
+            display: flex;
+            gap: var(--space-8);
+            border-bottom: 2px solid var(--color-border);
+            margin-bottom: var(--space-24);
+        }
+
+        .tab-btn {
+            padding: var(--space-12) var(--space-16);
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            color: var(--color-text-secondary);
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all 150ms;
+        }
+
+        .tab-btn.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .matrix-input {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: var(--space-16);
+        }
+
+        th {
+            background: var(--color-gray-200);
+            padding: var(--space-12);
+            text-align: left;
+            font-weight: 600;
+            font-size: var(--font-size-sm);
+            color: var(--color-text);
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        td {
+            padding: var(--space-12);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        td input {
+            margin: 0;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-20);
+            margin-bottom: var(--space-32);
+        }
+
+        .metric-card {
+            background: var(--color-surface);
+            border-radius: var(--radius-md);
+            border-left: 4px solid var(--color-primary);
+            padding: var(--space-20);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .metric-card.positive {
+            border-left-color: var(--color-success);
+        }
+
+        .metric-card.negative {
+            border-left-color: var(--color-error);
+        }
+
+        .metric-label {
+            font-size: var(--font-size-sm);
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: var(--font-size-3xl);
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        .ranking-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            padding: var(--space-16);
+            border-bottom: 1px solid var(--color-border);
+            background: var(--color-surface);
+        }
+
+        .ranking-item:last-child {
+            border-bottom: none;
+        }
+
+        .ranking-position {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: var(--color-primary);
+            color: white;
+            border-radius: 50%;
+            font-weight: 600;
+            margin-right: var(--space-16);
+            flex-shrink: 0;
+        }
+
+        .ranking-name {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .ranking-score {
+            text-align: right;
+            color: var(--color-text-secondary);
+        }
+
+        .chart-container {
+            background: var(--color-surface);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--color-border);
+            padding: var(--space-20);
+            margin-bottom: var(--space-24);
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: var(--space-16);
+            height: 200px;
+            margin-top: var(--space-20);
+        }
+
+        .bar {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-8);
+        }
+
+        .bar-fill {
+            width: 100%;
+            background: linear-gradient(180deg, var(--color-primary), var(--color-primary-hover));
+            border-radius: var(--radius-base) var(--radius-base) 0 0;
+            min-height: 20px;
+        }
+
+        .bar-label {
+            font-size: var(--font-size-sm);
+            text-align: center;
+            width: 100%;
+            word-break: break-word;
+        }
+
+        .info-box {
+            background: rgba(33, 128, 141, 0.08);
+            border-left: 4px solid var(--color-primary);
+            padding: var(--space-16);
+            border-radius: var(--radius-base);
+            margin-bottom: var(--space-16);
+        }
+
+        .info-box p {
+            margin: 0;
+            font-size: var(--font-size-sm);
+            color: var(--color-text);
+        }
+
+        .warning-box {
+            background: rgba(168, 75, 47, 0.08);
+            border-left: 4px solid var(--color-warning);
+            padding: var(--space-16);
+            border-radius: var(--radius-base);
+            margin-bottom: var(--space-16);
+        }
+
+        .warning-box p {
+            margin: 0;
+            font-size: var(--font-size-sm);
+            color: var(--color-text);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .row {
+            display: flex;
+            gap: var(--space-16);
+        }
+
+        .col {
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--space-12);
+            }
+
+            header {
+                padding: var(--space-20) var(--space-12);
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-16);
+            }
+
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .row {
+                flex-direction: column;
+            }
+
+            table {
+                font-size: var(--font-size-sm);
+            }
+
+            td, th {
+                padding: var(--space-8);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>⚔️ PROMETHEE Decision Analysis</h1>
+            <p>Multi-Criteria Decision Making for Military Targeting & Strategic Planning</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('input')">Setup & Input</button>
+            <button class="tab-btn" onclick="switchTab('analysis')">Analysis</button>
+            <button class="tab-btn" onclick="switchTab('results')">Results</button>
+            <button class="tab-btn" onclick="switchTab('help')">Help & Info</button>
+        </div>
+
+        <!-- Input Tab -->
+        <div id="input" class="tab-content active">
+            <div class="grid">
+                <div>
+                    <div class="card">
+                        <h3>Configuration</h3>
+
+                        <div class="form-group">
+                            <label for="analysisName">Analysis Name</label>
+                            <input type="text" id="analysisName" placeholder="e.g., Target Selection 2026" value="Target Selection Analysis">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="altCount">Number of Alternatives</label>
+                            <input type="number" id="altCount" min="2" max="20" value="3" onchange="updateAlternatives()">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="critCount">Number of Criteria</label>
+                            <input type="number" id="critCount" min="1" max="10" value="3" onchange="updateCriteria()">
+                        </div>
+
+                        <button class="btn btn--primary btn--full-width" onclick="generateMatrices()">Generate Matrices</button>
+                    </div>
+
+                    <div class="card" style="margin-top: var(--space-20);">
+                        <h3>Quick Load</h3>
+                        <button class="btn btn--secondary btn--full-width" onclick="loadExample()">Load Example Data</button>
+                        <p style="font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-top: var(--space-12);">Loads sample military targeting scenario</p>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="card">
+                        <h3>Alternatives</h3>
+                        <div id="altInputs"></div>
+                    </div>
+
+                    <div class="card" style="margin-top: var(--space-20);">
+                        <h3>Criteria Details</h3>
+                        <div class="matrix-input" id="critDetails"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Evaluation Matrix (Alternative × Criteria)</h3>
+                <div class="matrix-input" id="matrixContainer"></div>
+            </div>
+        </div>
+
+        <!-- Analysis Tab -->
+        <div id="analysis" class="tab-content">
+            <div class="card">
+                <h3>PROMETHEE Method Configuration</h3>
+                <div class="info-box">
+                    <p><strong>PROMETHEE:</strong> Preference Ranking Organization Method for Enrichment Evaluation. This method ranks alternatives by computing preference degrees between all pairs based on deviation from criteria values.</p>
+                </div>
+
+                <div class="matrix-input" id="prometheeConfig"></div>
+
+                <div style="margin-top: var(--space-24);">
+                    <button class="btn btn--primary btn--full-width" onclick="runAnalysis()">Run PROMETHEE Analysis</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Tab -->
+        <div id="results" class="tab-content">
+            <div id="resultsContainer" class="hidden">
+                <h2>Analysis Results</h2>
+
+                <div class="results-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Overall Score</div>
+                        <div class="metric-value" id="overallScore">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Top Alternative</div>
+                        <div class="metric-value" id="topAlternative" style="font-size: var(--font-size-xl);">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Analysis Alternatives</div>
+                        <div class="metric-value" id="altCountDisplay">-</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Complete Ranking (Net Flow Scores)</h3>
+                    <ul class="ranking-list" id="rankingList"></ul>
+                </div>
+
+                <div class="card">
+                    <h3>PROMETHEE Flows Visualization</h3>
+                    <div class="chart-container">
+                        <p style="margin: 0 0 var(--space-16) 0; color: var(--color-text-secondary); font-size: var(--font-size-sm);">Net Flow Scores (Φ) - Higher is Better</p>
+                        <div class="bar-chart" id="flowChart"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Positive Flows (Outgoing)</h3>
+                    <div class="chart-container">
+                        <p style="margin: 0 0 var(--space-16) 0; color: var(--color-text-secondary); font-size: var(--font-size-sm);">Φ+ - Dominance over Others</p>
+                        <div class="bar-chart" id="posFlowChart"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Negative Flows (Incoming)</h3>
+                    <div class="chart-container">
+                        <p style="margin: 0 0 var(--space-16) 0; color: var(--color-text-secondary); font-size: var(--font-size-sm);">Φ- - Dominated by Others (Lower is Better)</p>
+                        <div class="bar-chart" id="negFlowChart"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Data Summary</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Alternative</th>
+                                <th>Φ+ (Positive)</th>
+                                <th>Φ- (Negative)</th>
+                                <th>Φ (Net Flow)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summaryTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="noResults" class="card">
+                <p style="color: var(--color-text-secondary); text-align: center;">Run the analysis to see results here.</p>
+            </div>
+        </div>
+
+        <!-- Help Tab -->
+        <div id="help" class="tab-content">
+            <div class="card">
+                <h3>PROMETHEE Method Overview</h3>
+                <p><strong>What is PROMETHEE?</strong><br>
+                PROMETHEE (Preference Ranking Organization Method for Enrichment Evaluation) is a multi-criteria decision method that ranks alternatives based on pairwise comparisons. It calculates preference degrees between alternatives for each criterion, then aggregates them using weights.</p>
+
+                <h3>Key Concepts</h3>
+
+                <h4>1. Preference Functions</h4>
+                <p>Define how preference increases with difference in criterion values:</p>
+                <ul>
+                    <li><strong>Usual:</strong> Indifferent until one alternative strictly dominates. No parameters needed.</li>
+                    <li><strong>U-Shape:</strong> Indifference threshold (q). Becomes preference after threshold.</li>
+                    <li><strong>V-Shape:</strong> Preference threshold (p). Preference increases linearly with difference.</li>
+                    <li><strong>Level:</strong> Both indifference (q) and preference (p) thresholds. Partial preference between them.</li>
+                    <li><strong>Linear:</strong> Similar to V-shape but with smoother increase.</li>
+                    <li><strong>Gaussian:</strong> Smooth S-shaped curve with threshold parameter (s).</li>
+                </ul>
+
+                <h4>2. Thresholds</h4>
+                <ul>
+                    <li><strong>Indifference Threshold (q):</strong> Maximum difference where alternatives are considered equally good.</li>
+                    <li><strong>Preference Threshold (p):</strong> Minimum difference for strict preference of one alternative over another.</li>
+                </ul>
+
+                <h4>3. Flow Scores</h4>
+                <ul>
+                    <li><strong>Φ+ (Positive Flow):</strong> How much an alternative dominates others. Higher is better.</li>
+                    <li><strong>Φ- (Negative Flow):</strong> How much an alternative is dominated by others. Lower is better.</li>
+                    <li><strong>Φ (Net Flow):</strong> Final ranking score = Φ+ - Φ-. Higher ranking = better alternative.</li>
+                </ul>
+
+                <h4>4. Weights</h4>
+                <p>Criteria importance (must sum to 100%). Higher weight = more important criterion.</p>
+
+                <h3>For Military Applications</h3>
+                <ul>
+                    <li><strong>Targeting:</strong> Rank potential targets by threat level, accessibility, strategic value.</li>
+                    <li><strong>Force Selection:</strong> Compare available assets by capability, readiness, sustainability.</li>
+                    <li><strong>Course of Action:</strong> Evaluate different operational plans across multiple objectives.</li>
+                    <li><strong>Resource Allocation:</strong> Prioritize deployment or investment across criteria.</li>
+                </ul>
+
+                <h3>Getting Started</h3>
+                <ol>
+                    <li>Enter number of alternatives (targets, assets, plans) and criteria (considerations)</li>
+                    <li>Name your alternatives and criteria</li>
+                    <li>Input the evaluation matrix (performance values)</li>
+                    <li>Set criteria weights and preference functions</li>
+                    <li>Run analysis to get ranked results</li>
+                </ol>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // State management
+        let state = {
+            alternatives: [],
+            criteria: [],
+            matrix: [],
+            weights: [],
+            functions: [],
+            thresholds: {
+                indifference: [],
+                preference: []
+            },
+            results: null
+        };
+
+        // Tab switching
+        function switchTab(tabName) {
+            const contents = document.querySelectorAll('.tab-content');
+            const buttons = document.querySelectorAll('.tab-btn');
+
+            contents.forEach(c => c.classList.remove('active'));
+            buttons.forEach(b => b.classList.remove('active'));
+
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Update alternatives inputs
+        function updateAlternatives() {
+            const count = parseInt(document.getElementById('altCount').value);
+            state.alternatives = Array(count).fill(null).map((_, i) => `Alternative ${i + 1}`);
+
+            const container = document.getElementById('altInputs');
+            container.innerHTML = '';
+
+            state.alternatives.forEach((alt, idx) => {
+                const group = document.createElement('div');
+                group.className = 'form-group';
+                group.innerHTML = `
+                    <label for="alt${idx}">Alternative ${idx + 1}</label>
+                    <input type="text" id="alt${idx}" value="${alt}" onchange="updateAltName(${idx}, this.value)">
+                `;
+                container.appendChild(group);
+            });
+
+            generateMatrices();
+        }
+
+        function updateAltName(idx, name) {
+            state.alternatives[idx] = name;
+        }
+
+        // Update criteria inputs
+        function updateCriteria() {
+            const count = parseInt(document.getElementById('critCount').value);
+            state.criteria = Array(count).fill(null).map((_, i) => `Criterion ${i + 1}`);
+            state.weights = Array(count).fill(1 / count);
+            state.functions = Array(count).fill('linear');
+            state.thresholds.indifference = Array(count).fill(0.1);
+            state.thresholds.preference = Array(count).fill(0.5);
+
+            renderCriteriaDetails();
+            generateMatrices();
+        }
+
+        function renderCriteriaDetails() {
+            const container = document.getElementById('critDetails');
+            container.innerHTML = '';
+
+            state.criteria.forEach((crit, idx) => {
+                const critDiv = document.createElement('div');
+                critDiv.style.marginBottom = 'var(--space-16)';
+                critDiv.style.padding = 'var(--space-16)';
+                critDiv.style.background = 'var(--color-gray-200)';
+                critDiv.style.borderRadius = 'var(--radius-base)';
+
+                const weightPercent = (state.weights[idx] * 100).toFixed(1);
+
+                critDiv.innerHTML = `
+                    <div style="margin-bottom: var(--space-12);">
+                        <label><strong>Criterion Name</strong></label>
+                        <input type="text" value="${crit}" onchange="updateCritName(${idx}, this.value)" style="margin-bottom: var(--space-8);">
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-12); margin-bottom: var(--space-8);">
+                            <div>
+                                <label>Weight (${weightPercent}%)</label>
+                                <input type="number" min="0" max="1" step="0.05" value="${state.weights[idx]}" onchange="updateWeight(${idx}, this.value)">
+                            </div>
+                            <div>
+                                <label>Direction</label>
+                                <select onchange="updateDirection(${idx}, this.value)">
+                                    <option value="max">Maximize</option>
+                                    <option value="min">Minimize</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-12);">
+                            <div>
+                                <label>Function Type</label>
+                                <select onchange="updateFunction(${idx}, this.value)">
+                                    <option value="usual">Usual</option>
+                                    <option value="ushape">U-Shape</option>
+                                    <option value="vshape">V-Shape</option>
+                                    <option value="level">Level</option>
+                                    <option value="linear" selected>Linear</option>
+                                    <option value="gaussian">Gaussian</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Preference Function Parameters</label>
+                                <div style="display: flex; gap: var(--space-8);">
+                                    <div style="flex: 1;">
+                                        <small>q (indiff)</small>
+                                        <input type="number" min="0" step="0.05" value="${state.thresholds.indifference[idx]}" onchange="updateThreshold(${idx}, 'indifference', this.value)" style="font-size: var(--font-size-sm);">
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <small>p (pref)</small>
+                                        <input type="number" min="0" step="0.05" value="${state.thresholds.preference[idx]}" onchange="updateThreshold(${idx}, 'preference', this.value)" style="font-size: var(--font-size-sm);">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(critDiv);
+            });
+
+            normalizeWeights();
+        }
+
+        function updateCritName(idx, name) {
+            state.criteria[idx] = name;
+            renderCriteriaDetails();
+        }
+
+        function updateWeight(idx, value) {
+            state.weights[idx] = parseFloat(value);
+            normalizeWeights();
+        }
+
+        function normalizeWeights() {
+            const sum = state.weights.reduce((a, b) => a + b, 0);
+            if (sum > 0) {
+                state.weights = state.weights.map(w => w / sum);
+            }
+            renderCriteriaDetails();
+        }
+
+        function updateFunction(idx, value) {
+            state.functions[idx] = value;
+        }
+
+        function updateThreshold(idx, type, value) {
+            state.thresholds[type][idx] = parseFloat(value);
+        }
+
+        function updateDirection(idx, value) {
+            // Store direction info if needed for future use
+        }
+
+        // Generate evaluation matrix
+        function generateMatrices() {
+            const altCount = state.alternatives.length;
+            const critCount = state.criteria.length;
+
+            // Initialize matrix with zeros
+            state.matrix = Array(altCount).fill(null).map(() => Array(critCount).fill(0));
+
+            const container = document.getElementById('matrixContainer');
+            container.innerHTML = '';
+
+            const table = document.createElement('table');
+            table.style.width = '100%';
+
+            // Header row
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            const emptyTh = document.createElement('th');
+            emptyTh.textContent = 'Alternative';
+            headerRow.appendChild(emptyTh);
+
+            state.criteria.forEach(crit => {
+                const th = document.createElement('th');
+                th.textContent = crit;
+                th.style.textAlign = 'center';
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            // Data rows
+            const tbody = document.createElement('tbody');
+            state.alternatives.forEach((alt, altIdx) => {
+                const row = document.createElement('tr');
+                const altCell = document.createElement('td');
+                altCell.textContent = alt;
+                altCell.style.fontWeight = '500';
+                row.appendChild(altCell);
+
+                state.criteria.forEach((_, critIdx) => {
+                    const cell = document.createElement('td');
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.value = state.matrix[altIdx][critIdx];
+                    input.onchange = () => {
+                        state.matrix[altIdx][critIdx] = parseFloat(input.value);
+                    };
+                    input.style.width = '100%';
+                    cell.appendChild(input);
+                    row.appendChild(cell);
+                });
+                tbody.appendChild(row);
+            });
+            table.appendChild(tbody);
+            container.appendChild(table);
+        }
+
+        // Load example data
+        function loadExample() {
+            // Military targeting scenario example
+            document.getElementById('analysisName').value = 'Target Selection - FOB Threats';
+            document.getElementById('altCount').value = 4;
+            document.getElementById('critCount').value = 5;
+
+            updateAlternatives();
+            updateCriteria();
+
+            state.alternatives = ['Compound A', 'Compound B', 'Compound C', 'Compound D'];
+            state.criteria = ['Threat Level', 'Accessibility', 'Civilian Impact', 'Intelligence Value', 'Logistics Cost'];
+            state.weights = [0.30, 0.25, 0.20, 0.15, 0.10];
+            state.functions = ['linear', 'linear', 'linear', 'vshape', 'linear'];
+            state.thresholds.indifference = [0.1, 0.05, 0.2, 0.1, 0.15];
+            state.thresholds.preference = [0.5, 0.3, 0.8, 0.4, 0.6];
+
+            // Example matrix
+            state.matrix = [
+                [8.5, 7.2, 6.1, 8.0, 5.5],
+                [7.2, 8.8, 5.5, 6.5, 7.2],
+                [6.8, 6.5, 8.2, 7.5, 4.8],
+                [9.1, 7.8, 4.2, 8.8, 6.1]
+            ];
+
+            renderCriteriaDetails();
+            generateMatrices();
+
+            // Update matrix display
+            const inputs = document.querySelectorAll('#matrixContainer input[type="number"]');
+            inputs.forEach((input, idx) => {
+                const flatIdx = idx;
+                const altIdx = Math.floor(flatIdx / state.criteria.length);
+                const critIdx = flatIdx % state.criteria.length;
+                input.value = state.matrix[altIdx][critIdx];
+            });
+
+            alert('Example military targeting scenario loaded! Review and adjust parameters as needed.');
+        }
+
+        // PROMETHEE Analysis Engine
+        function calculatePreferenceFunction(difference, type, q, p) {
+            // q = indifference threshold, p = preference threshold
+            if (difference <= 0) return 0;
+
+            switch(type) {
+                case 'usual':
+                    return difference > 0 ? 1 : 0;
+                case 'ushape':
+                    return difference <= q ? 0 : 1;
+                case 'vshape':
+                    if (difference <= q) return 0;
+                    if (difference >= p) return 1;
+                    return (difference - q) / (p - q);
+                case 'linear':
+                    if (difference <= q) return 0;
+                    if (difference >= p) return 1;
+                    return (difference - q) / (p - q);
+                case 'level':
+                    if (difference <= q) return 0;
+                    if (difference >= p) return 1;
+                    return 0.5;
+                case 'gaussian':
+                    return 1 - Math.exp(-Math.pow(difference, 2) / (2 * Math.pow(p, 2)));
+                default:
+                    return 0;
+            }
+        }
+
+        function runAnalysis() {
+            const altCount = state.alternatives.length;
+            const critCount = state.criteria.length;
+
+            // Validate input
+            if (state.matrix.some(row => row.every(val => val === 0))) {
+                alert('Please enter evaluation matrix values');
+                return;
+            }
+
+            // Calculate preference indices for all pairs
+            let posFlows = Array(altCount).fill(0);
+            let negFlows = Array(altCount).fill(0);
+
+            for (let i = 0; i < altCount; i++) {
+                for (let j = 0; j < altCount; j++) {
+                    if (i === j) continue;
+
+                    let prefIndex = 0;
+                    for (let k = 0; k < critCount; k++) {
+                        const diff = state.matrix[i][k] - state.matrix[j][k];
+                        const prefValue = calculatePreferenceFunction(
+                            Math.abs(diff),
+                            state.functions[k],
+                            state.thresholds.indifference[k],
+                            state.thresholds.preference[k]
+                        );
+                        prefIndex += state.weights[k] * prefValue;
+                    }
+
+                    if (diff > 0) {
+                        posFlows[i] += prefIndex / (altCount - 1);
+                    } else if (diff < 0) {
+                        negFlows[i] += prefIndex / (altCount - 1);
+                    }
+                }
+            }
+
+            // Calculate net flows
+            let netFlows = posFlows.map((pos, i) => pos - negFlows[i]);
+
+            // Store results
+            state.results = {
+                alternatives: state.alternatives,
+                posFlows: posFlows,
+                negFlows: negFlows,
+                netFlows: netFlows
+            };
+
+            // Display results
+            displayResults();
+        }
+
+        function displayResults() {
+            if (!state.results) return;
+
+            const altCount = state.alternatives.length;
+            document.getElementById('noResults').classList.add('hidden');
+            document.getElementById('resultsContainer').classList.remove('hidden');
+
+            // Sort by net flow descending
+            const sorted = state.results.netFlows
+                .map((score, idx) => ({ idx, score, alt: state.results.alternatives[idx] }))
+                .sort((a, b) => b.score - a.score);
+
+            // Update summary metrics
+            document.getElementById('overallScore').textContent = sorted[0].score.toFixed(3);
+            document.getElementById('topAlternative').textContent = sorted[0].alt;
+            document.getElementById('altCountDisplay').textContent = altCount;
+
+            // Ranking list
+            const rankingList = document.getElementById('rankingList');
+            rankingList.innerHTML = '';
+            sorted.forEach((item, position) => {
+                const li = document.createElement('li');
+                li.className = 'ranking-item';
+                li.innerHTML = `
+                    <div class="ranking-position">${position + 1}</div>
+                    <div class="ranking-name">${item.alt}</div>
+                    <div class="ranking-score">Φ = ${item.score.toFixed(4)}</div>
+                `;
+                rankingList.appendChild(li);
+            });
+
+            // Flow charts
+            renderFlowChart('flowChart', sorted.map(s => state.results.netFlows[s.idx]));
+            renderFlowChart('posFlowChart', sorted.map(s => state.results.posFlows[s.idx]));
+            renderFlowChart('negFlowChart', sorted.map(s => state.results.negFlows[s.idx]));
+
+            // Summary table
+            const table = document.getElementById('summaryTable');
+            table.innerHTML = '';
+            sorted.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.alt}</td>
+                    <td>${state.results.posFlows[item.idx].toFixed(4)}</td>
+                    <td>${state.results.negFlows[item.idx].toFixed(4)}</td>
+                    <td><strong>${item.score.toFixed(4)}</strong></td>
+                `;
+                table.appendChild(row);
+            });
+        }
+
+        function renderFlowChart(containerId, values) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            const maxValue = Math.max(...values);
+            const minValue = Math.min(...values);
+            const range = maxValue - minValue || 1;
+
+            state.results.alternatives.forEach((alt, idx) => {
+                const value = values[idx];
+                const heightPercent = ((value - minValue) / range) * 100;
+
+                const barDiv = document.createElement('div');
+                barDiv.className = 'bar';
+
+                const fill = document.createElement('div');
+                fill.className = 'bar-fill';
+                fill.style.height = Math.max(20, heightPercent) + '%';
+                fill.title = value.toFixed(4);
+
+                const label = document.createElement('div');
+                label.className = 'bar-label';
+                label.textContent = alt.substring(0, 10);
+
+                barDiv.appendChild(fill);
+                barDiv.appendChild(label);
+                container.appendChild(barDiv);
+            });
+        }
+
+        // Initialize
+        updateAlternatives();
+        updateCriteria();
+    </script>
+</body>
+</html>
